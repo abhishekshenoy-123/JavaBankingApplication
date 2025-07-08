@@ -180,6 +180,114 @@ public class Manager extends Admin {
          }
     }
 
+    public int GetAccountIDFromCustomerId(int CustomerID)
+    {
+        String Query="SELECT AccountID FROM Account WHERE CustomerID=?";
+        try(Connection con=db.getConnection();PreparedStatement ps=con.prepareStatement(Query))
+        {
+            ps.setInt(1,CustomerID);
+            ResultSet result=ps.executeQuery();
+            if(result.next())
+            {
+                return result.getInt(1);
+            }
+        }
+        catch(SQLException e)
+        {
+            System.out.println(e);
+        }
+        return -1;
+    }
+
+    public Double getBalance(int AccID)
+    {
+        String Query="SELECT InitialBalance FROM Account WHERE AccountID=?";
+        try(Connection con=db.getConnection();PreparedStatement ps=con.prepareStatement(Query))
+        {
+            ps.setInt(1,AccID);
+            ResultSet result=ps.executeQuery();
+            if(result.next())
+            {
+                return result.getDouble("InitialBalance");
+            }
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+        return -1.0;
+    }
+    public Boolean Transaction(int AccID,String Type,Double amount)
+    {
+        Double balance=getBalance(AccID);
+        Boolean res=false;
+        if(Type.equals("Withdraw"))
+        {
+            if(amount>balance)
+            {
+                System.out.println("Withdrawal amount is greater than balance");
+                System.out.println("The current balance is "+balance);
+                res=false;
+            }
+            else {
+                Double newBalance=balance-amount;
+                String Query="INSERT INTO Transaction (TransactionType,AccountID,Amount) VALUES(?,?,?)";
+                String Query1="UPDATE Account SET InitialBalance=? WHERE AccountID=?";
+                try(Connection con=db.getConnection();PreparedStatement ps=con.prepareStatement(Query))
+                {
+                    ps.setString(1,Type);
+                    ps.setInt(2,AccID);
+                    ps.setDouble(3,amount);
+                    ps.executeUpdate();
+                } catch (SQLException e) {
+                    throw new RuntimeException(e);
+                }
+
+                try(Connection con1=db.getConnection();PreparedStatement ps1=con1.prepareStatement(Query1))
+                {
+                    ps1.setDouble(1,newBalance);
+                    ps1.setInt(2,AccID);
+                    ps1.executeUpdate();
+                    System.out.println("Current balance is "+newBalance);
+                    res=true;
+                }
+                catch(SQLException e)
+                {
+                    System.out.println(e);
+                }
+
+            }
+        }
+        else if(Type.equals("Deposit"))
+        {
+            Double AddBalance=balance+amount;
+            String Query2="INSERT INTO Transaction (TransactionType,AccountID,Amount) VALUES(?,?,?)";
+            String Query3="UPDATE Account SET InitialBalance=? WHERE AccountID=?";
+            try(Connection con=db.getConnection();PreparedStatement ps=con.prepareStatement(Query2))
+            {
+                ps.setString(1,Type);
+                ps.setInt(2,AccID);
+                ps.setDouble(3,amount);
+                ps.executeUpdate();
+            } catch (SQLException e) {
+                throw new RuntimeException(e);
+            }
+
+            try(Connection con1=db.getConnection();PreparedStatement ps1=con1.prepareStatement(Query3))
+            {
+                ps1.setDouble(1,AddBalance);
+                ps1.setInt(2,AccID);
+                ps1.executeUpdate();
+                System.out.println("Current balance is "+AddBalance);
+                res=true;
+            }
+            catch(SQLException e)
+            {
+                System.out.println(e);
+            }
+        }
+        return res;
+    }
+
+
 
 
 

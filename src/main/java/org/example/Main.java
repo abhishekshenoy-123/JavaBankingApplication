@@ -165,8 +165,37 @@ public class Main {
                                         long newPhoneNumber=sc.nextLong();
                                         b.updatePhoneNumber(customID,newPhoneNumber);
                                     }
-                                    break;
+                                    continue;
                                 case 3:
+                                    System.out.println("Enter the customer email");
+                                    sc.nextLine();
+                                    String Cemail=sc.nextLine();
+                                    int custId=b.getCustomerIDFromEmail(Cemail);
+                                    int AccID=b.GetAccountIDFromCustomerId(custId);
+                                    System.out.println("Select the Transaction type(1.withdraw,2.Deposit)");
+                                    int selection=sc.nextInt();
+                                    if(selection==1)
+                                    {
+                                        System.out.println("Enter the amount to be withdrawn");
+                                        Double Amount=sc.nextDouble();
+                                        Boolean withdrawres=b.Transaction(AccID,"Withdraw",Amount);
+                                        if(withdrawres==false)
+                                        {
+                                            continue;
+                                        }
+                                        else
+                                        {
+                                            System.out.println("Withdraw succesfull");
+                                        }
+                                    }
+                                    else if(selection==2)
+                                    {
+                                        System.out.println("Enter the amount to be Deposit");
+                                        Double Amount=sc.nextDouble();
+                                        b.Transaction(AccID,"Deposit",Amount);
+                                    }
+
+
                                     break;
                                 case 4:
                                     break;
