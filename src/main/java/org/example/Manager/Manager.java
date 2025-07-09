@@ -2,10 +2,8 @@ package org.example.Manager;
 
 import org.example.Admin.Admin;
 
-import java.sql.Connection;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
+import java.sql.*;
+import java.time.format.DateTimeFormatter;
 
 public class Manager extends Admin {
     public static Boolean LoginManager(String Mname,String Memail,String pass)
@@ -287,10 +285,60 @@ public class Manager extends Admin {
         return res;
     }
 
+    public void generateReport(String type,String muser,int accid){
+        String date_condition;
+        if(type.equalsIgnoreCase("daily")){
+            date_condition="DATE(t.TransactionDate)=CURDATE()";
+        } else if (type.equalsIgnoreCase("monthly")) {
+            date_condition="MONTH(t.TransactionDate)=MONTH(CURDATE()) AND YEAR(t.TransactionDate)=YEAR(CURDATE())";
+        }else{
+            System.out.println("invalid report type");
+            return ;
+        }
+
+        String query="SELECT t.TransactionID,t.AccountID,t.TransactionType,t.Amount,t.TransactionDate "+
+                "FROM Transaction t "+
+                "JOIN Account a ON t.AccountID=a.AccountID "+
+                "JOIN Customer c ON a.CustomerID=c.CustomerID "+
+                "JOIN Manager m ON c.ManagerID=m.ManagerID "+
+                "WHERE "+date_condition+" AND m.ManagerName=? AND t.AccountID=?";
+
+        try(Connection conn= db.getConnection();PreparedStatement ps= conn.prepareStatement(query
+        )){
+            ps.setString(1,muser);
+            ps.setInt(2, accid);
+            ResultSet rs=ps.executeQuery();
+            System.out.println(type.toUpperCase()+" Transaction Report");
+            System.out.printf("%-5s %-10s %-12s %-10s %-20s%n", "trn_ID", "Acc ID", "Type", "Amount", "Date/Time");
+
+            boolean found=false;
+            while(rs.next()){
+                found=true;
+                int tid=rs.getInt("TransactionID");
+                int acid=rs.getInt("AccountID");
+                String trans_type=rs.getString("TransactionType");
+                double amt=rs.getDouble("Amount");
+                Timestamp ts=rs.getTimestamp("TransactionDate");
+                String formattedDate=ts.toLocalDateTime().format(DateTimeFormatter.ofPattern("dd-MM-yyyy HH:mm:ss"));
+                System.out.printf("%-5d %-10d %-12s ₹%-10.2f %-20s%n", tid, acid, trans_type, amt, formattedDate);
+
+            }
+            if(!found){
+                System.out.println("Transaction not found for this peroid");
+            }
+
+
+        }catch(SQLException e){
+            System.out.println("data base error "+e.getMessage());
+
+        }
+
+    }
+    }
 
 
 
 
 
 
-}
+
