@@ -1,6 +1,7 @@
 package org.example;
 
 import org.example.Admin.Admin;
+import org.example.Customer.Customer;
 import org.example.Manager.Manager;
 
 import java.sql.*;
@@ -16,6 +17,7 @@ public class Main {
         Scanner sc = new Scanner(System.in);
         Admin a = new Admin();
         Manager b = new Manager();
+        Customer c=new Customer();
         while (true) {
             System.out.println("1.Admin\t2.Manager\t3.Customer\t4.Exit");
             System.out.println("Enter the choice");
@@ -110,10 +112,13 @@ public class Main {
                                     String email = sc.nextLine();
                                     System.out.println("Enter the phone number");
                                     long number = sc.nextLong();
+                                    System.out.println("Enter the password");
+                                    sc.nextLine();
+                                    String password=sc.nextLine();
                                     if (b.CheckCustomers(email) == true) {
                                         System.out.println("Email already registered");
                                     } else {
-                                        int cid = b.addCustomer(cname, email, number, managerID);
+                                        int cid = b.addCustomer(cname, email, number, managerID,password);
                                         System.out.println("Details retreived succesfully");
                                         System.out.println("To create account please enter the initial balance to be deposited");
                                         Double initialb = sc.nextDouble();
@@ -122,15 +127,21 @@ public class Main {
                                     }
                                     continue;
                                 case 2:
-                                    sc.nextLine();
-                                    System.out.println("Enter the customer name ");
-                                    String customname;
-                                    customname = sc.nextLine();
-                                    sc.nextLine();
-                                    System.out.println("Enter the email ");
-                                    String customemail;
-                                    customemail = sc.nextLine();
-                                    int customID = b.getCustomerIDFromEmail(customemail);
+                                        sc.nextLine();
+                                        System.out.println("Enter the customer name ");
+                                        String customname;
+                                        customname = sc.nextLine();
+                                        System.out.println("Enter the email ");
+                                        String customemail;
+                                        customemail = sc.nextLine();
+                                        System.out.println("Enter the password");
+                                        String customPassword=sc.nextLine();
+                                        if(b.checkCustomerExists(customname,customemail,customPassword)==false)
+                                        {
+                                            System.out.println("Wrong credentials Try Again");
+                                            continue;
+                                        }
+                                        int customID = b.getCustomerIDFromEmail(customemail);
                                     System.out.println("Enter the field which you want to update(1.Email,2.PhoneNumber)");
                                     int fieldnumber = sc.nextInt();
                                     if (fieldnumber == 1) {
@@ -195,6 +206,37 @@ public class Main {
                     }
                     break;
                 case 3:
+
+                    while(true)
+                    {
+                        System.out.println("Enter your name");
+                        sc.nextLine();  // Clear buffer
+                        String yourName = sc.nextLine();
+
+                        System.out.println("Enter your email");
+                        String yourEmail = sc.nextLine();
+
+                        System.out.println("Enter your password");
+                        String yourPassword = sc.nextLine();
+
+                        Boolean possibility = c.LoginCustomer(yourName, yourEmail, yourPassword);
+
+                        if(possibility)
+                        {
+                            System.out.println("Login successful");
+                            System.out.println("Account details are: ");
+                            int yourID=b.getCustomerIDFromEmail(yourEmail);
+                            c.ViewAccountDetails(yourID);
+                            break;
+                        }
+                        else
+                        {
+                            System.out.println("Try again");
+                        }
+                    }
+
+
+
                     break;
                 case 4:
                     exit(0);

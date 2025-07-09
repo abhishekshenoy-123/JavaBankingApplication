@@ -88,9 +88,9 @@ public class Manager extends Admin {
         UpdateSinglefield(customerID,"CustomerphoneNumber",String.valueOf(newPhoneNumber));
     }
 
-    public int addCustomer(String CustomerName,String CustomerEmail,long CustomerphoneNumber,int ManagerID)
+    public int addCustomer(String CustomerName,String CustomerEmail,long CustomerphoneNumber,int ManagerID,String Password)
     {
-        String Query="INSERT INTO Customer(CustomerID,CustomerName,CustomerEmail,CustomerphoneNumber,ManagerID) VALUES(?,?,?,?,?)";
+        String Query="INSERT INTO Customer(CustomerID,CustomerName,CustomerEmail,CustomerphoneNumber,ManagerID,Password) VALUES(?,?,?,?,?,?)";
         int CustomerID=getCustomerId();
         try(Connection conn=db.getConnection();PreparedStatement ps=conn.prepareStatement(Query))
         {
@@ -99,6 +99,7 @@ public class Manager extends Admin {
                 ps.setString(3,CustomerEmail.trim());
                 ps.setLong(4,CustomerphoneNumber);
                 ps.setInt(5,ManagerID);
+                ps.setString(6,Password);
                 ps.executeUpdate();
 
         } catch (SQLException e) {
@@ -120,6 +121,29 @@ public class Manager extends Admin {
             System.out.println(e);
             return false;
         }
+    }
+
+    public Boolean checkCustomerExists(String customname,String customemail,String customPassword)
+    {
+        String QUERY="SELECT 1 FROM Customer WHERE CustomerName=? AND CustomerEmail=? AND Password=?";
+        Boolean sucess=false;
+        try(Connection con=db.getConnection();PreparedStatement ps=con.prepareStatement(QUERY))
+        {
+            ps.setString(1,customname);
+            ps.setString(2,customemail);
+            ps.setString(3,customPassword);
+            ResultSet res=ps.executeQuery();
+            if(res.next()==true)
+            {
+                sucess=true;
+            }
+            else {
+                sucess=false;
+            }
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+        return sucess;
     }
     public int getManagerID(String Nemail,String Password)
     {
